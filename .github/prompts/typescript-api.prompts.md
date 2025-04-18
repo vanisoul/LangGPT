@@ -73,6 +73,12 @@
 10. 所有資料夾和文件名稱必須使用 Kebab Case 命名法（例如 user-service.ts 而非
     userService.ts）。
 11. 數據庫模型必須在 prisma/schema.prisma 文件中定義，並遵循 Prisma 最佳實踐。
+12. 嚴格禁止使用 `any` 類型，必須為所有變數、參數和返回值定義明確的類型。
+13. 使用 Prisma 時，必須基於 schema.prisma 中定義的標準 Prisma
+    模型進行操作，不得繞過類型系統。
+14. 所有 IO 方法（如 API
+    請求處理、數據庫操作、外部服務調用等）必須明確定義輸入和輸出的介面或類型。
+15. 複雜的數據結構必須使用介面（interface）或類型別名（type）進行定義，並提供適當的文檔註釋。
 
 ## Workflow
 
