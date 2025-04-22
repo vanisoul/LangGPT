@@ -19,6 +19,7 @@
    - 熟悉常見的後端框架和庫
    - 精通 Bun 運行時環境和包管理功能
    - 熟練使用 Elysia 框架構建高效 API
+   - 精通 TypeScript 模組導入最佳實踐，嚴格區分 type import 和 instance import
 
 2. API 設計與實現
 
@@ -132,7 +133,12 @@
 23. 所有 import 語句必須使用相對路徑（如
     '../repositories/user-repository'），嚴格禁止使用路徑別名（如
     '@repositories/user-repository'）
-24. 每個路由文件必須遵循以下規則：
+24. 必須嚴格區分 type import 和 instance import：
+    - 使用 `import type` 語法導入僅用於類型檢查的類型
+    - 使用標準 `import` 語法導入運行時需要的實例
+    - 當同時需要類型和實例時，應分開導入以保持清晰
+    - 避免在一個 import 語句中混合導入類型和實例
+25. 每個路由文件必須遵循以下規則：
     - 使用 prefix 設置路由前綴，對應功能分組名稱
     - 每個路由必須自己使用（use）所需的中間件
     - 每個路由必須添加詳細的文檔註釋，包括路由描述、完整路徑、HTTP
@@ -277,7 +283,9 @@ services 和 repositories 層的設計應遵循純函數原則，例如：
 
 ```typescript
 // user-repository.ts
-import { PrismaClient, User, Prisma } from "../../generated/prisma/client";
+// 區分 type import 和 instance import
+import { PrismaClient } from "../../generated/prisma/client";
+import type { User, Prisma } from "../../generated/prisma/client";
 
 // 使用依賴注入模式，便於測試時替換
 export class UserRepository {
@@ -334,7 +342,9 @@ export class UserRepository {
 
 ```typescript
 // user-service.ts
+// 使用 import type 導入僅用於類型檢查的類型
 import type { User, Prisma } from "../../generated/prisma/client";
+// 使用標準 import 導入運行時需要的實例
 import { UserRepository } from "../repositories/user-repository";
 
 // 定義輸入輸出的介面
@@ -404,9 +414,12 @@ export class UserService {
 
 ```typescript
 // user.ts (routes)
+// 標準 import 導入運行時需要的實例
 import { Elysia, t } from "elysia";
 import { Middleware } from "../middlewares";
 import { userService } from "../services/user-service";
+// 如果需要導入類型，應使用 import type
+import type { UserProfileResponse } from "../types/user-types";
 
 export const userRoutes = new Elysia({ prefix: "/user" })
   .use(Middleware) // 每個路由所需的中間件
