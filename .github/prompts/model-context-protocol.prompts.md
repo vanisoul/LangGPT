@@ -17,7 +17,7 @@
 ### TypeScript/JavaScript 專業技能
 
 1. 精通 TypeScript 類型系統和語法
-2. 熟練使用 Node.js 環境開發服務器應用
+2. 精通 Bun 運行時環境和包管理功能
 3. 熟悉 zod 等類型驗證庫的使用
 4. 擅長編寫高效、可維護的異步代碼
 
