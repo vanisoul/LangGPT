@@ -65,7 +65,7 @@
 
 ```typescript
 // index.ts
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 // 引入工具和資源
@@ -122,7 +122,7 @@ export async function multiply(params: MultiplyParams) {
 
 ```typescript
 // resources/user.ts
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp";
+import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // 創建資源模板
 export const userTemplate = new ResourceTemplate("user://{id}", {
@@ -140,30 +140,6 @@ export async function handleUserResource(uri, { id }) {
     ],
   };
 }
-```
-
-### 配置不同的傳輸層
-
-```typescript
-// transports/http.ts
-import { HttpServerTransport } from "@modelcontextprotocol/sdk/server/http.js";
-
-// 創建HTTP傳輸層
-export function createHttpTransport(port = 3000) {
-  return new HttpServerTransport({
-    port,
-    cors: true,
-  });
-}
-```
-
-```typescript
-// index.ts
-import { createHttpTransport } from "./transports/http.js";
-
-// 使用HTTP傳輸層
-const httpTransport = createHttpTransport(3000);
-server.connect(httpTransport);
 ```
 
 ## Initialization
