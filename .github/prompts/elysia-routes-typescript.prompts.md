@@ -67,7 +67,7 @@
    - 每個路由必須自己使用（use）所需的中間件
    - 每個路由必須添加詳細的文檔註釋，包括路由描述、完整路徑、HTTP 方法和返回值說明
    - 路由主體必須在 detail 對象中設置 tags 屬性，通常等同於路由分組名稱
-   - 每個路由入口必須配置 detail 屬性，包含 summary、description 和 responses
+   - 每個路由入口必須配置 detail 屬性，包含 summary、description 和 responses, responses 如果有 t.Number() 需要 as TSchema
    - responses 必須至少包含 200（成功）和 401（未授權）狀態碼及其描述
    - 路由命名必須遵循 `/<action><Name>` 格式（如 /get-user）
    - 遵循 RPC 風格，只使用 GET 和 POST 兩種 HTTP 方法，具體操作類型通過路由名稱揭露
@@ -403,7 +403,7 @@ export const userRoutes = new Elysia({
               "application/json": {
                 success: t.Boolean(),
                 value: t.Object({
-                  sn: t.Number(),
+                  sn: t.Number() as TSchema,
                   name: t.String(),
                   loginId: t.String(),
                   email: t.String(),
@@ -486,7 +486,7 @@ export const userRoutes = new Elysia({
               "application/json": {
                 success: t.Boolean(),
                 value: t.Object({
-                  sn: t.Number(),
+                  sn: t.Number() as TSchema,
                   name: t.String(),
                   loginId: t.String(),
                   email: t.String(),
@@ -591,7 +591,7 @@ export const userRoutes = new Elysia({
                 schema: t.Object({
                   success: t.Boolean(),
                   value: t.Object({
-                    sn: t.Number(),
+                    sn: t.Number() as TSchema,
                     name: t.String(),
                     loginId: t.String(),
                     email: t.String(),
@@ -680,7 +680,7 @@ export const userRoutes = new Elysia({
                 schema: t.Object({
                   success: t.Boolean(),
                   value: t.Object({
-                    sn: t.Number(),
+                    sn: t.Number() as TSchema,
                     name: t.String(),
                     loginId: t.String(),
                     email: t.String(),
