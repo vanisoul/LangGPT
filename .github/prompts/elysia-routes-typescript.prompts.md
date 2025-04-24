@@ -3,7 +3,7 @@
 ## Profile
 
 - Author: Vanisoul
-- Version: 1.0
+- Version: 1.1
 - Language: 繁體中文
 - Description: 你是一位專業的 Elysia Routes 開發專家，精通 API 路由設計與實現。你擅長使用 Elysia 框架構建高效、可靠、可維護的 API 路由層。
 
@@ -29,7 +29,7 @@
    - 精通複雜物件的參數驗證
    - 熟練處理查詢參數（query）和路徑參數（params）
    - 精通配置 API 文檔，包括 summary、description 和 responses
-   - 熟練設置標準響應狀態碼（如 200、400、401）及其描述
+   - 熟練設置標準響應狀態碼（如 200、400、401）及其描述, 200 必序包含 content, content 需要有 success & value & error.message
 
 ## Rules
 
@@ -40,19 +40,28 @@
    - 專注於處理請求上下文（ctx）相關邏輯
    - 負責參數驗證、錯誤處理和回應格式化
    - 不應包含複雜業務邏輯，應將其委託給 services 層
-   - 錯誤處理可以使用 error 函數或 set.status 方法
+   - 錯誤處理可以使用 error 函數
 
 3. 錯誤處理必須統一且一致
 
    - 可以使用 Elysia 的 error 函數：`error(401, "Unauthorized")`
+   - 預料中的錯誤必須回傳 400 狀態碼
+   - 行為完全正確時必須回傳 200 狀態碼
+   - 其他非預期錯誤直接回傳 500 狀態碼（由程式自己決定）
 
-4. routes 層必須按功能分組，每個分組使用單獨的文件（如 `routes/<group>.ts`）
+4. 回應格式必須統一且一致
 
-5. 必須在 `routes/index.ts` 中集中導入和導出所有路由
+   - 400 錯誤回應格式必須為：`{ success: false, error: { message: string } }`
+   - 200 成功回應格式必須為：`{ success: true, value: T }`
+   - 500 錯誤由系統自動處理
 
-6. 在 `src/index.ts` 中必須導入整合後的路由並將其掛載到應用程序中
+5. routes 層必須按功能分組，每個分組使用單獨的文件（如 `routes/<group>.ts`）
 
-7. 每個路由文件必須遵循以下規則：
+6. 必須在 `routes/index.ts` 中集中導入和導出所有路由
+
+7. 在 `src/index.ts` 中必須導入整合後的路由並將其掛載到應用程序中
+
+8. 每個路由文件必須遵循以下規則：
 
    - 使用 prefix 設置路由前綴，對應功能分組名稱
    - 每個路由必須自己使用（use）所需的中間件
@@ -64,7 +73,7 @@
    - 遵循 RPC 風格，只使用 GET 和 POST 兩種 HTTP 方法，具體操作類型通過路由名稱揭露
    - 參數驗證必須明確定義，包括必填和選填欄位
 
-8. 身份驗證和授權檢查可以通過以下方式實現：
+9. 身份驗證和授權檢查可以通過以下方式實現：
 
    - 直接在路由處理函數中進行檢查
 
@@ -81,6 +90,7 @@
 6. 確保解決方案遵循項目的技術標準，特別是：
    - 遵循 Elysia 框架的最佳實踐
    - 確保路由按功能分組並在 routes/index.ts 中集中管理
+   - 確保錯誤處理和回應格式符合規定標準
 
 ## Commands
 
@@ -148,8 +158,34 @@ export const userRoutes = new Elysia({
    */
   .get(
     "/get-user",
-    async ({ auth }) => {
-      return await userService.getUserById(auth.userId);
+    async ({ auth, error }) => {
+      // 身份驗證檢查
+      if (!auth) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
+      }
+
+      try {
+        // 行為完全正確時回傳 200
+        const user = await userService.getUserById(auth.userId);
+        return {
+          success: true,
+          value: user,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to get user",
+          },
+        };
+      }
     },
     {
       detail: {
@@ -161,10 +197,26 @@ export const userRoutes = new Elysia({
             content: {
               "application/json": {
                 schema: t.Object({
-                  id: t.String(),
-                  username: t.String(),
-                  email: t.String(),
-                  profile: t.Object({}),
+                  success: t.Boolean(),
+                  value: t.Object({
+                    id: t.String(),
+                    username: t.String(),
+                    email: t.String(),
+                    profile: t.Object({}),
+                  }),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  error: t.Object({
+                    message: t.String(),
+                  }),
                 }),
               },
             },
@@ -184,8 +236,37 @@ export const userRoutes = new Elysia({
    */
   .post(
     "/update-profile",
-    async ({ body, auth }) => {
-      return await userService.updateProfile(auth.userId, body);
+    async ({ body, auth, error }) => {
+      // 身份驗證檢查
+      if (!auth) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
+      }
+
+      try {
+        // 行為完全正確時回傳 200
+        const updatedProfile = await userService.updateProfile(
+          auth.userId,
+          body
+        );
+        return {
+          success: true,
+          value: updatedProfile,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to update profile",
+          },
+        };
+      }
     },
     {
       detail: {
@@ -199,11 +280,24 @@ export const userRoutes = new Elysia({
               "application/json": {
                 schema: t.Object({
                   success: t.Boolean(),
-                  user: t.Object({
+                  value: t.Object({
                     id: t.String(),
                     username: t.String(),
                     email: t.String(),
                     updatedAt: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  error: t.Object({
+                    message: t.String(),
                   }),
                 }),
               },
@@ -270,11 +364,32 @@ export const userRoutes = new Elysia({
     async ({ auth, error }) => {
       // 直接在處理函數中進行身份驗證
       if (!auth) {
-        return error(401, "Unauthorized");
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
       }
 
-      // 專注於處理 ctx 相關邏輯，如獲取 auth 信息
-      return await userService.getUserProfile(auth.userId);
+      try {
+        // 專注於處理 ctx 相關邏輯，如獲取 auth 信息
+        const profile = await userService.getUserProfile(auth.userId);
+        // 行為完全正確時回傳 200
+        return {
+          success: true,
+          value: profile,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to get user profile",
+          },
+        };
+      }
     },
     {
       detail: {
@@ -286,11 +401,26 @@ export const userRoutes = new Elysia({
             description: "成功獲取用戶信息",
             content: {
               "application/json": {
-                schema: t.Object({
-                  id: t.String(),
-                  username: t.String(),
+                success: t.Boolean(),
+                value: t.Object({
+                  sn: t.Number(),
+                  name: t.String(),
+                  loginId: t.String(),
                   email: t.String(),
-                  profile: t.Object({}),
+                  phone: t.String(),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  error: t.Object({
+                    message: t.String(),
+                  }),
                 }),
               },
             },
@@ -310,14 +440,35 @@ export const userRoutes = new Elysia({
    */
   .get(
     "/get-detail",
-    async ({ query, auth, set }) => {
+    async ({ query, auth, error }) => {
       // 直接在處理函數中進行身份驗證
       if (!auth) {
-        return error(401, "Unauthorized");
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
       }
 
-      // 處理查詢參數
-      return await userService.getUserDetail(query.userId);
+      try {
+        // 處理查詢參數
+        const userDetail = await userService.getUserDetail(query.userId);
+        // 行為完全正確時回傳 200
+        return {
+          success: true,
+          value: userDetail,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to get user detail",
+          },
+        };
+      }
     },
     {
       // 查詢參數驗證
@@ -333,14 +484,25 @@ export const userRoutes = new Elysia({
             description: "成功獲取用戶詳細資料",
             content: {
               "application/json": {
-                schema: t.Object({
-                  id: t.String(),
-                  username: t.String(),
+                success: t.Boolean(),
+                value: t.Object({
+                  sn: t.Number(),
+                  name: t.String(),
+                  loginId: t.String(),
                   email: t.String(),
-                  profile: t.Object({
-                    bio: t.String(),
-                    avatar: t.String(),
-                    joinDate: t.String(),
+                  phone: t.String(),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  error: t.Object({
+                    message: t.String(),
                   }),
                 }),
               },
@@ -363,11 +525,32 @@ export const userRoutes = new Elysia({
     "/create-user",
     async ({ body, auth, error }) => {
       if (!auth) {
-        return error(401, "Unauthorized");
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
       }
 
-      // 專注於處理 ctx 相關邏輯，將業務邏輯委託給 service
-      return await userService.createUser(body);
+      try {
+        // 專注於處理 ctx 相關邏輯，將業務邏輯委託給 service
+        const newUser = await userService.createUser(body);
+        // 行為完全正確時回傳 200
+        return {
+          success: true,
+          value: newUser,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to create user",
+          },
+        };
+      }
     },
     {
       // 複雜物件的參數驗證
@@ -407,11 +590,25 @@ export const userRoutes = new Elysia({
               "application/json": {
                 schema: t.Object({
                   success: t.Boolean(),
-                  user: t.Object({
-                    id: t.String(),
-                    username: t.String(),
+                  value: t.Object({
+                    sn: t.Number(),
+                    name: t.String(),
+                    loginId: t.String(),
                     email: t.String(),
-                    createdAt: t.String(),
+                    phone: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  error: t.Object({
+                    message: t.String(),
                   }),
                 }),
               },
@@ -434,11 +631,35 @@ export const userRoutes = new Elysia({
     "/update-profile",
     async ({ body, auth, error }) => {
       if (!auth) {
-        return error(401, "Unauthorized");
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: "Unauthorized",
+          },
+        };
       }
 
-      // 專注於處理 ctx 相關邏輯，將業務邏輯委託給 service
-      return await userService.updateProfile(auth.userId, body);
+      try {
+        // 專注於處理 ctx 相關邏輯，將業務邏輯委託給 service
+        const updatedProfile = await userService.updateProfile(
+          auth.userId,
+          body
+        );
+        // 行為完全正確時回傳 200
+        return {
+          success: true,
+          value: updatedProfile,
+        };
+      } catch (err) {
+        // 預料中的錯誤，回傳 400
+        return {
+          success: false,
+          error: {
+            message: err.message || "Failed to update profile",
+          },
+        };
+      }
     },
     {
       // 參數驗證
@@ -458,7 +679,23 @@ export const userRoutes = new Elysia({
               "application/json": {
                 schema: t.Object({
                   success: t.Boolean(),
-                  value: t.Object({}),
+                  value: t.Object({
+                    sn: t.Number(),
+                    name: t.String(),
+                    loginId: t.String(),
+                    email: t.String(),
+                    phone: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          400: {
+            description: "請求錯誤",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
                   error: t.Object({
                     message: t.String(),
                   }),
