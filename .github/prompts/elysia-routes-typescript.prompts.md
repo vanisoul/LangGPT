@@ -16,6 +16,8 @@
    - 熟悉 `<group>/<action><Name>` 命名格式（如 user/get-user）
    - 熟悉 API 認證、授權和安全機制
    - 擅長設計高效的錯誤處理和日誌記錄策略
+   - 精通在 detail 對象中使用 tags 為路由分組，確保 API 文檔結構清晰
+   - 熟練配置 detail 屬性，提供完整的 API 文檔信息
 
 2. Routes 層專業知識
    - 熟練實現 routes 層作為 API 入口點
@@ -25,6 +27,8 @@
    - 熟練將業務邏輯委託給 services 層
    - 精通複雜物件的參數驗證
    - 熟練處理查詢參數（query）和路徑參數（params）
+   - 精通配置 API 文檔，包括 summary、description 和 responses
+   - 熟練設置標準響應狀態碼（如 200、400、401）及其描述
 
 ## Rules
 
@@ -50,6 +54,9 @@
    - 使用 prefix 設置路由前綴，對應功能分組名稱
    - 每個路由必須自己使用（use）所需的中間件
    - 每個路由必須添加詳細的文檔註釋，包括路由描述、完整路徑、HTTP 方法和返回值說明
+   - 路由主體必須在 detail 對象中設置 tags 屬性，通常等同於路由分組名稱
+   - 每個路由入口必須配置 detail 屬性，包含 summary、description 和 responses
+   - responses 必須至少包含 200（成功）和 401（未授權）狀態碼及其描述
    - 路由命名必須遵循 `/<action><Name>` 格式（如 /get-user）
    - 參數驗證必須明確定義，包括必填和選填欄位
 
@@ -119,11 +126,14 @@ export const routes = new Elysia().use(userRoutes).use(authRoutes);
 user.ts 路由範例:
 
 ```typescript
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { Middleware } from "../middlewares";
 import { userService } from "../services/user-service";
 
-export const userRoutes = new Elysia({ prefix: "/user" })
+export const userRoutes = new Elysia({
+  prefix: "/user",
+  detail: { tags: ["user"] },
+})
   .use(Middleware) // 每個路由所需的中間件
   /**
    * 獲取當前用戶信息
@@ -131,18 +141,76 @@ export const userRoutes = new Elysia({ prefix: "/user" })
    * 方法: GET
    * 返回: 當前登錄用戶的詳細信息
    */
-  .get("/get-user", async ({ auth }) => {
-    return await userService.getUserById(auth.userId);
-  })
+  .get(
+    "/get-user",
+    async ({ auth }) => {
+      return await userService.getUserById(auth.userId);
+    },
+    {
+      detail: {
+        summary: "獲取當前用戶信息",
+        description: "獲取當前登錄用戶的詳細信息，需要用戶已登錄。",
+        responses: {
+          200: {
+            description: "成功獲取用戶信息",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  id: t.String(),
+                  username: t.String(),
+                  email: t.String(),
+                  profile: t.Object({}),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
+    }
+  )
   /**
    * 更新用戶信息
    * 路由: /user/update-profile
    * 方法: POST
    * 返回: 更新後的用戶信息
    */
-  .post("/update-profile", async ({ body, auth }) => {
-    return await userService.updateProfile(auth.userId, body);
-  });
+  .post(
+    "/update-profile",
+    async ({ body, auth }) => {
+      return await userService.updateProfile(auth.userId, body);
+    },
+    {
+      detail: {
+        summary: "更新用戶信息",
+        description:
+          "更新當前登錄用戶的個人資料。請求體中需要提供要更新的欄位。成功後將返回更新後的用戶信息。",
+        responses: {
+          200: {
+            description: "用戶信息更新成功",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  user: t.Object({
+                    id: t.String(),
+                    username: t.String(),
+                    email: t.String(),
+                    updatedAt: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
+    }
+  );
 ```
 
 src/index.ts 範例:
@@ -173,7 +241,10 @@ import type { UserProfileResponse } from "../types/user-types";
 /**
  * 用戶路由
  */
-export const userRoutes = new Elysia({ prefix: "/user" })
+export const userRoutes = new Elysia({
+  prefix: "/user",
+  detail: { tags: ["user"] },
+})
   .use(Middleware) // 每個路由所需的中間件
   /**
    * 獲取當前用戶信息
@@ -181,15 +252,43 @@ export const userRoutes = new Elysia({ prefix: "/user" })
    * 方法: GET
    * 返回: 當前登錄用戶的詳細信息
    */
-  .get("/get-user", async ({ auth, error }) => {
-    // 直接在處理函數中進行身份驗證
-    if (!auth) {
-      return error(401, "Unauthorized");
-    }
+  .get(
+    "/get-user",
+    async ({ auth, error }) => {
+      // 直接在處理函數中進行身份驗證
+      if (!auth) {
+        return error(401, "Unauthorized");
+      }
 
-    // 專注於處理 ctx 相關邏輯，如獲取 auth 信息
-    return await userService.getUserProfile(auth.userId);
-  })
+      // 專注於處理 ctx 相關邏輯，如獲取 auth 信息
+      return await userService.getUserProfile(auth.userId);
+    },
+    {
+      detail: {
+        summary: "獲取當前用戶信息",
+        description:
+          "獲取當前登錄用戶的詳細個人資料。需要用戶已登錄並通過身份驗證。",
+        responses: {
+          200: {
+            description: "成功獲取用戶信息",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  id: t.String(),
+                  username: t.String(),
+                  email: t.String(),
+                  profile: t.Object({}),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
+    }
+  )
   /**
    * 獲取用戶詳細資料
    * 路由: /user/get-detail
@@ -212,6 +311,33 @@ export const userRoutes = new Elysia({ prefix: "/user" })
       query: t.Object({
         userId: t.String(),
       }),
+      detail: {
+        summary: "獲取用戶詳細資料",
+        description:
+          "根據用戶ID獲取指定用戶的詳細資料。需要提供有效的用戶ID作為查詢參數。",
+        responses: {
+          200: {
+            description: "成功獲取用戶詳細資料",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  id: t.String(),
+                  username: t.String(),
+                  email: t.String(),
+                  profile: t.Object({
+                    bio: t.String(),
+                    avatar: t.String(),
+                    joinDate: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
     }
   )
   /**
@@ -257,6 +383,32 @@ export const userRoutes = new Elysia({ prefix: "/user" })
           )
         ),
       }),
+      detail: {
+        summary: "創建新用戶",
+        description:
+          "創建一個新的用戶帳戶。請求體中需要提供用戶的基本信息、地址和偏好設置。成功後將返回創建的用戶信息。",
+        responses: {
+          200: {
+            description: "用戶創建成功",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  user: t.Object({
+                    id: t.String(),
+                    username: t.String(),
+                    email: t.String(),
+                    createdAt: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
     }
   )
   /**
@@ -282,6 +434,30 @@ export const userRoutes = new Elysia({ prefix: "/user" })
         email: t.Optional(t.String({ format: "email" })),
         bio: t.Optional(t.String({ maxLength: 500 })),
       }),
+      detail: {
+        summary: "更新用戶密碼",
+        description:
+          "用戶可以通過此接口更新自己的密碼。請求體中需要提供當前密碼和新密碼。成功後將返回更新結果。",
+        responses: {
+          200: {
+            description: "密碼更新成功",
+            content: {
+              "application/json": {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  value: t.Object({}),
+                  error: t.Object({
+                    message: t.String(),
+                  }),
+                }),
+              },
+            },
+          },
+          401: {
+            description: "未授權",
+          },
+        },
+      },
     }
   );
 ```
