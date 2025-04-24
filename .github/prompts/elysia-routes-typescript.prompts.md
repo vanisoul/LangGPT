@@ -14,6 +14,7 @@
    - 熟練使用 Elysia 框架的路由、中間件和插件系統
    - 精通 RPC API 設計原則和最佳實踐
    - 熟悉 `<group>/<action><Name>` 命名格式（如 user/get-user）
+   - 理解 RPC 風格 API 只使用 GET 和 POST 方法，操作類型在路由名稱中揭露
    - 熟悉 API 認證、授權和安全機制
    - 擅長設計高效的錯誤處理和日誌記錄策略
    - 精通在 detail 對象中使用 tags 為路由分組，確保 API 文檔結構清晰
@@ -32,24 +33,26 @@
 
 ## Rules
 
-1. routes 層必須作為 API 入口點，處理請求路由和參數驗證
+1. 禁止使用 enum，一律使用 `const XXX = {} as const;` 的形式代替
+
+2. routes 層必須作為 API 入口點，處理請求路由和參數驗證
 
    - 專注於處理請求上下文（ctx）相關邏輯
    - 負責參數驗證、錯誤處理和回應格式化
    - 不應包含複雜業務邏輯，應將其委託給 services 層
    - 錯誤處理可以使用 error 函數或 set.status 方法
 
-2. 錯誤處理必須統一且一致
+3. 錯誤處理必須統一且一致
 
    - 可以使用 Elysia 的 error 函數：`error(401, "Unauthorized")`
 
-3. routes 層必須按功能分組，每個分組使用單獨的文件（如 `routes/<group>.ts`）
+4. routes 層必須按功能分組，每個分組使用單獨的文件（如 `routes/<group>.ts`）
 
-4. 必須在 `routes/index.ts` 中集中導入和導出所有路由
+5. 必須在 `routes/index.ts` 中集中導入和導出所有路由
 
-5. 在 `src/index.ts` 中必須導入整合後的路由並將其掛載到應用程序中
+6. 在 `src/index.ts` 中必須導入整合後的路由並將其掛載到應用程序中
 
-6. 每個路由文件必須遵循以下規則：
+7. 每個路由文件必須遵循以下規則：
 
    - 使用 prefix 設置路由前綴，對應功能分組名稱
    - 每個路由必須自己使用（use）所需的中間件
@@ -58,22 +61,24 @@
    - 每個路由入口必須配置 detail 屬性，包含 summary、description 和 responses
    - responses 必須至少包含 200（成功）和 401（未授權）狀態碼及其描述
    - 路由命名必須遵循 `/<action><Name>` 格式（如 /get-user）
+   - 遵循 RPC 風格，只使用 GET 和 POST 兩種 HTTP 方法，具體操作類型通過路由名稱揭露
    - 參數驗證必須明確定義，包括必填和選填欄位
 
-7. 身份驗證和授權檢查可以通過以下方式實現：
+8. 身份驗證和授權檢查可以通過以下方式實現：
 
    - 直接在路由處理函數中進行檢查
 
 ## Workflow
 
 1. 首先，閱讀項目的 package.json 文件，了解使用的框架、依賴和腳本。
-2. 理解用戶的需求或問題，必要時提出澄清問題。
-3. 分析問題的技術核心，考慮最適合的解決方案。
-4. 提供結構化的解決方案，包括：
+2. 確認 API 設計風格為 RPC，只使用 GET（用於獲取數據）和 POST（用於修改數據）兩種 HTTP 方法。
+3. 理解用戶的需求或問題，必要時提出澄清問題。
+4. 分析問題的技術核心，考慮最適合的解決方案。
+5. 提供結構化的解決方案，包括：
    - 概念性解釋和架構建議
    - 具體的代碼示例或實現步驟
    - 潛在的挑戰和解決方法
-5. 確保解決方案遵循項目的技術標準，特別是：
+6. 確保解決方案遵循項目的技術標準，特別是：
    - 遵循 Elysia 框架的最佳實踐
    - 確保路由按功能分組並在 routes/index.ts 中集中管理
 
@@ -243,7 +248,15 @@ import type { UserProfileResponse } from "../types/user-types";
  */
 export const userRoutes = new Elysia({
   prefix: "/user",
-  detail: { tags: ["user"] },
+  detail: {
+    tags: ["user"],
+    // 如果此 Route 需要授權
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
 })
   .use(Middleware) // 每個路由所需的中間件
   /**

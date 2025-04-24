@@ -43,27 +43,28 @@
 
 ## Rules
 
-1. 數據庫模型必須在 prisma/schema.prisma 文件中定義，並遵循 Prisma 最佳實踐。
-2. 使用 Prisma 時，必須基於 schema.prisma 中定義的標準 Prisma 模型進行操作，不得繞過類型系統。
-3. 所有數據庫操作方法必須明確定義輸入和輸出的介面或類型。
-4. 複雜的數據結構必須使用介面（interface）或類型別名（type）進行定義，並提供適當的文檔註釋。
-5. repositories 層必須負責所有資料存取操作，封裝資料庫查詢：
+1. 禁止使用 enum，一律使用 `const XXX = {} as const;` 的形式代替。
+2. 數據庫模型必須在 prisma/schema.prisma 文件中定義，並遵循 Prisma 最佳實踐。
+3. 使用 Prisma 時，必須基於 schema.prisma 中定義的標準 Prisma 模型進行操作，不得繞過類型系統。
+4. 所有數據庫操作方法必須明確定義輸入和輸出的介面或類型。
+5. 複雜的數據結構必須使用介面（interface）或類型別名（type）進行定義，並提供適當的文檔註釋。
+6. repositories 層必須負責所有資料存取操作，封裝資料庫查詢：
    - 必須設計通用且可重用的方法（如 findById, findByXXX, getXXX, create, update, delete, count 等）
    - 提供一致的資料存取介面，隱藏資料庫實現細節
    - 不包含業務邏輯，只負責資料的存取
-6. 每個 repository 類和方法必須使用 JSDoc 註釋提供完整的文檔，包括：
+7. 每個 repository 類和方法必須使用 JSDoc 註釋提供完整的文檔，包括：
    - 類/方法描述
    - 參數說明（@param）
    - 返回值說明（@returns）
-7. 對於有外部依賴（如 Prisma）的函數，必須使用依賴注入（dependency injection）模式，便於測試時使用模擬（mock）或替代實現
-8. 每個 repository 文件必須在底部導出一個單例實例，便於在應用中使用
-9. 必須嚴格區分 type import 和 instance import：
-   - 使用 `import type` 語法導入僅用於類型檢查的類型
-   - 使用標準 `import` 語法導入運行時需要的實例
-   - 當同時需要類型和實例時，應分開導入以保持清晰
-10. 複雜的數據庫操作（如多表操作）必須使用 Prisma 事務（$transaction）確保數據一致性
-11. 必須實現適當的錯誤處理機制，確保數據庫操作的穩定性和可靠性
-12. 可以在 repository 中實現簡單的緩存機制，但必須確保緩存的一致性和有效性
+8. 對於有外部依賴（如 Prisma）的函數，必須使用依賴注入（dependency injection）模式，便於測試時使用模擬（mock）或替代實現
+9. 每個 repository 文件必須在底部導出一個單例實例，便於在應用中使用
+10. 必須嚴格區分 type import 和 instance import：
+    - 使用 `import type` 語法導入僅用於類型檢查的類型
+    - 使用標準 `import` 語法導入運行時需要的實例
+    - 當同時需要類型和實例時，應分開導入以保持清晰
+11. 複雜的數據庫操作（如多表操作）必須使用 Prisma 事務（$transaction）確保數據一致性
+12. 必須實現適當的錯誤處理機制，確保數據庫操作的穩定性和可靠性
+13. 可以在 repository 中實現簡單的緩存機制，但必須確保緩存的一致性和有效性
 
 ## Workflow
 
