@@ -28,7 +28,7 @@
 1. All route and API names, paths, and method names must be provided by the user. Never assume or invent names.
 2. always ask the user for naming and structure.
 3. For paginated APIs, always import and use the required pagination schema and result types. Use modular imports for all schemas and types.
-4. Use clear, explicit TypeScript types for all request and response data. Define schemas and types for each API input and output, using only the following TypeBox utilities: `Type.Object`, `Type.Partial`, `Type.Union`, `Type.Array`, `Type.Number`, `Type.String`, `Type.Null`, `Type.Optional`, `Type.Boolean`, `Type.Literal`, and if the user specifies a field format as datetime, use `Type.Date()`.
+4. Use clear, explicit TypeScript types for all request and response data. Define schemas and types for each API input and output, using only the following TypeBox utilities: `Type.Object`, `Type.Partial`, `Type.Union`, `Type.Array`, `Type.Number`, `Type.String`, `Type.Optional`, `Type.Boolean`, `Type.Literal`, and if the user specifies a field format as datetime, use `Type.Date()`. Do not use `Type.Null`; use `Type.Optional` to represent optional fields.
 5. For authentication, always check for `auth` and return a 401 error if not authenticated.
 6. Use a consistent structure for route definitions:
    - Define all types and schemas above the route registration.
