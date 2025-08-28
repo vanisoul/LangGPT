@@ -10,6 +10,28 @@
 
 [【中文文档】](README_zh.md)
 
+* [**2025.4.30 更新**]： LangGPT 提示词生态
+
+| 仓库名称 | 简介 | Star数量 |
+|---------|------|---------|
+| [飞书知识库-LangGPT 提示词知识库](http://feishu.langgpt.ai) | LangGPT 提示词社区收集整理的提示词资料. | 飞书知识库 |
+| [langgptai/LangGPT](https://github.com/langgptai/LangGPT) | LangGPT: Empowering everyone to become a prompt expert!🚀 Structured Prompt，Language of GPT, 结构化提示词，结构化Prompt | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/LangGPT) |
+| [langgptai/wonderful-prompts](https://github.com/langgptai/wonderful-prompts) | 🔥中文 prompt 精选🔥，ChatGPT 使用指南，提升 ChatGPT 可玩性和可用性！🚀 | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/wonderful-prompts) |
+| [langgptai/awesome-claude-prompts](https://github.com/langgptai/awesome-claude-prompts) | This repo includes Claude prompt curation to use Claude better. | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/awesome-claude-prompts) |
+| [langgptai/Awesome-Multimodal-Prompts](https://github.com/langgptai/Awesome-Multimodal-Prompts) | Prompts of GPT-4V & DALL-E3 to full utilize the multi-modal ability. GPT4V Prompts, DALL-E3 Prompts. | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/Awesome-Multimodal-Prompts) |
+| [langgptai/LLM-Jailbreaks](https://github.com/langgptai/LLM-Jailbreaks) | LLM Jailbreaks, ChatGPT, Claude, Llama, DAN Prompts, Prompt Leaking | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/LLM-Jailbreaks) |
+| [langgptai/awesome-llama-prompts](https://github.com/langgptai/awesome-llama-prompts) | LLM prompts, llama3 prompts, llama2 prompts | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/awesome-llama-prompts) |
+| [langgptai/awesome-grok-prompts](https://github.com/langgptai/awesome-grok-prompts) | A comprehensive collection of advanced prompts engineered for Grok AI. Features optimized templates, strategies, and expert techniques to maximize Grok's potential across diverse applications. | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/awesome-grok-prompts) |
+| [langgptai/Minstrel](https://github.com/langgptai/Minstrel) | Multi-agent to generate LangGPT prompts. | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/Minstrel) |
+| [langgptai/awesome-gemini-prompts](https://github.com/langgptai/awesome-gemini-prompts) | Gemini Prompts, Bard Prompts, LLM Prompts, LangGPT | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/awesome-gemini-prompts) |
+| [langgptai/awesome-deepseek-prompts](https://github.com/langgptai/awesome-deepseek-prompts) | Prompts for deepseek， deepseek R1 | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/awesome-deepseek-prompts) |
+| [langgptai/qwen-prompts](https://github.com/langgptai/qwen-prompts) | Prompts for qwen models | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/qwen-prompts) |
+| [langgptai/deep-research-prompts](https://github.com/langgptai/deep-research-prompts) | Prompts for deep research （openai， gemini，qwen） | ![GitHub Repo stars](https://badgen.net/github/stars/langgptai/deep-research-prompts) |
+| [LangGPT 论文](https://arxiv.org/abs/2402.16929) | LangGPT: Rethinking Structured Reusable Prompt Design Framework for LLMs from the Programming Language, [中文版](Papers/LangGPT_paper_cn.md) | 开源发表的LangGPT论文 |
+| [EmbraceAGI 社区](https://github.com/EmbraceAGI) | LangGPT.ai 专注提示词领域，EmbraceAGI 关心泛AI领域如ChatGPT、Agents等内容 | AGI开源社区 |
+
+* [**2025.1.28 更新**]: [推理模型：从面向过程到面向目标的提示方法](https://mp.weixin.qq.com/s/FLY0sy1jYv6eT9151Yz_jw) 在AIGC中国开发者大会上的分享，对于推理模型提示方法的变化：从面向过程SOP的提示方法到面向目标的提示方法的范式转变。
+
 * [**2024.12.13 更新**]: [提示词的道和术](https://langgptai.feishu.cn/wiki/AYMWwBPaSih46WkAo9jcfKkfntg) 我们举办的中国提示词工程师大会上，来自中国的提示词布道师李继刚分享了自己提示词创作的经验。
 
 * [**2024.12.13 更新**]: [从Demo到商用— 构建企业级提示词工程，加速AI应用商用落地](https://langgptai.feishu.cn/wiki/UTyswvusTiRw0TkZLI5cIG0Tnhc) 我们举办的中国提示词工程师大会上，来自中国的AI大模型公司百川智能商业技术总监郭美青分享了企业级提示词工程构建经验。
@@ -55,6 +77,7 @@ With a solid grasp of LangGPT, you'll be able to quickly and effortlessly begin 
 |-|-|-|
 | [LangGPT 论文](https://arxiv.org/abs/2402.16929) | LangGPT: Rethinking Structured Reusable Prompt Design Framework for LLMs from the Programming Language, [中文版](Papers/LangGPT_paper_cn.md) | 2024.2.26 |
 | [GPTs: LangGPT 提示词专家](https://chat.openai.com/gpts/editor/g-Apzuylaqk) | 自动化创建结构化提示词的GPTs | 2024.1.31 |
+| [kimi+: kimi x LangGPT 提示词专家](https://kimi.moonshot.cn/kimiplus/conpg00t7lagbbsfqkq0) | Kimi上自动化创建结构化提示词的GPTs | 2024.3.3 |
 | [视频 01-BiliBili 视频教程](https://www.bilibili.com/video/BV1rj411q78a) | B 站 UP 主 AIGCLINK 制作的 LangGPT 视频教程！感谢 AIGCLINK！ | 2023.9.03 |
 | [文章 01-系统论述:构建高性能 Prompt 之路——结构化 Prompt](Docs/HowToWritestructuredPrompts.md) | 关于结构化提示词看这篇就够了！ | 2023.7.30 |
 | [文章 02-Prompt 进阶 —— 提示链(Prompt Chain)和多提示词协同](Docs/PromptChain.md) | Prompt Chain 和 Prompt 协同，任务拆解等， LangGPT 社区联署联创文章. | 2023.8.31 |
